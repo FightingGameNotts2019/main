@@ -1,0 +1,218 @@
+import pygame
+import sys
+import os
+
+pygame.init()
+FPS = 60  # useful refresh rate, can be changed
+ANIMATION = 4  # for when they move
+clock = pygame.time.Clock()  # sets internal clock for the game
+
+WIDTH = 1280  # changed this and height to fit mac issac and thorsten has
+HEIGHT = 630
+LVL_1_GROUND = (HEIGHT - 130)
+PLAYER_HEIGHT = 20
+PLAYER_WIDTH = 60
+# might want to adjust the speeds on mac
+FALLING_SPEED = 10
+MOVING_SPEED = 10
+# Not used yet
+JUMP_HEIGHT = 100
+PLAYER1_X = 500
+PLAYER1_Y = (LVL_1_GROUND - PLAYER_WIDTH)  # Will change this to suit each level later so will automatically change
+PLAYER2_X = 1100
+PLAYER2_Y = (LVL_1_GROUND - PLAYER_WIDTH)  # Will change this to suit each level later so will automatically change
+
+
+'''
+Classes; all classes go here
+'''
+
+
+class Platform:
+    # Defines size, position and colour of platform objects
+    def __init__(self, size_x, size_y, pos_x, pos_y, colour):
+        self.surface = pygame.Surface((size_x, size_y))
+        self.rect = self.surface.get_rect(midtop=(pos_x, pos_y))
+        self.surface.fill(colour)
+
+        # draws the platform on the game screen
+    def draw(self):
+        screen.blit(self.surface, self.rect)
+
+
+class Player:
+    # TODO need to implement a if_on_platform() function to stop them falling
+    # TODO need to work on how the player updates because the old way cant work if there are different colours
+    def __init__(self, x, y, player):
+        self.x = x
+        self.y = y
+        # This is player number, ie 1 or 2
+        self.player = player
+        self.life = 200
+        self.hitbox = pygame.Rect(self.x, self.y, PLAYER_HEIGHT, PLAYER_WIDTH)
+
+
+    def show_life(self, color):
+        global screen
+        if self.player == 1:
+            pygame.draw.rect(screen, color, pygame.Rect(100, 100, self.life, 30))
+        elif self.player == 2:
+            pygame.draw.rect(screen, color, pygame.Rect(1300, 100, self.life, 30))
+
+    def show(self, colour):
+        global screen
+        pygame.draw.rect(screen, colour, pygame.Rect(self.x, self.y, PLAYER_HEIGHT, PLAYER_WIDTH))
+
+    def falling(self):
+        global bgColor
+        global plColor
+
+        if self.x <= 400 - PLAYER_HEIGHT or self.x >= 1200:
+            self.show(bgColor)
+            self.y = self.y + FALLING_SPEED
+            self.show(plColor)
+            self.hitbox = pygame.Rect(self.x, self.y, PLAYER_HEIGHT, PLAYER_WIDTH)
+
+    def reset(self):
+        global plColor
+        global bgColor
+
+        if self.y == 940:
+            if self.player == 1:
+                self.show(bgColor)
+                self.x = PLAYER1_X
+                self.y = PLAYER1_Y
+                self.show(plColor)
+                self.show_life(bgColor)
+                self.life -= 20
+                self.show_life(plColor)
+                self.hitbox = pygame.Rect(self.x, self.y, PLAYER_HEIGHT, PLAYER_WIDTH)
+
+            elif self.player == 2:
+                self.show(bgColor)
+                self.x = PLAYER2_X
+                self.y = PLAYER2_Y
+                self.show(plColor)
+                self.show_life(bgColor)
+                self.life -= 20
+                self.show_life(plColor)
+                self.hitbox = pygame.Rect(self.x, self.y, PLAYER_HEIGHT, PLAYER_WIDTH)
+
+    def move(self):
+        global bgColor
+        global plColor
+
+        if self.player == 1:
+
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_a]:
+                self.show(bgColor)
+                self.x -= MOVING_SPEED
+            if keys[pygame.K_d]:
+                self.show(bgColor)
+                self.x += MOVING_SPEED
+            self.hitbox = pygame.Rect(self.x, self.y, PLAYER_HEIGHT, PLAYER_WIDTH)
+            self.show(plColor)
+
+        if self.player == 2:
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_LEFT]:
+                self.show(bgColor)
+                self.x -= MOVING_SPEED
+            if keys[pygame.K_RIGHT]:
+                self.show(bgColor)
+                self.x += MOVING_SPEED
+            self.hitbox = self.hitbox = pygame.Rect(self.x, self.y, PLAYER_HEIGHT, PLAYER_WIDTH)
+            self.show(plColor)
+
+# Doesnt work
+    def jump(self):
+        global bgColor
+        global plColor
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
+            if self.y == 440:
+                return
+            self.show(bgColor)
+            self.y -= FALLING_SPEED
+            self.show(plColor)
+
+    def hit(self):
+        pass
+
+    def getHit(self):
+        pass
+
+    def invincible(self):
+        pass
+
+
+'''
+Setup, code only runs once during the beginning goes here.
+'''
+
+pygame.display.set_caption("Fighting Game")  # Changes caption in window
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+# Loads in the background image, you need to have a file called images and the photo name in the file for it to load
+background = pygame.image.load(os.path.join('images', 'background1.png')).convert()
+background_box = screen.get_rect()  # Fits background to screen
+SKY = (102, 178, 255)
+GREY = (38, 38, 38)
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)  # Designated ALPHA colour, if you need something to exist but not be seen make it this colour
+bgColor = pygame.Color("white")
+fgColor = pygame.Color("black")
+plColor = SKY
+
+screen.blit(background, background_box)  # This makes the background load up
+
+# TODO Need to implement a function that selects platforms based on relevant levels, easy to do just
+#  need a pick level option first
+
+platforms = []  # list for platforms to go in
+platforms.append(Platform(WIDTH, 1, WIDTH//2, LVL_1_GROUND, GREEN))  #These are the platforms for level 1
+platforms.append(Platform(300, 20, WIDTH//1.95, HEIGHT//3, BLACK))
+platforms.append(Platform(200, 20, WIDTH//4, HEIGHT//2, BLACK))
+platforms.append(Platform(200, 20, WIDTH//1.3, HEIGHT//2, BLACK))
+p_rects = [i.rect for i in platforms]
+
+# Draws platforms
+for i in platforms:
+    i.draw()
+
+PLAYER = Player(PLAYER1_X, PLAYER1_Y, 1)
+PLAYER.show(plColor)
+
+
+# Will change these numbers later to variables
+PLAYER2 = Player(PLAYER2_X, PLAYER2_Y, 2)
+PLAYER2.show(plColor)
+PLAYER.show_life(plColor)
+PLAYER2.show_life(plColor)
+
+
+'''
+Main Loop, code that runs constantly while playing the game goes here
+'''
+
+# Better loop that offers quit with q key and runs smoother on Mac
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == ord("q"):
+                pygame.quit()
+                sys.exit()
+    PLAYER.reset()
+    PLAYER2.reset()
+    # visualise the changes you just made
+    pygame.display.flip()
+    PLAYER.move()
+    PLAYER.falling()
+
+    PLAYER2.move()
+    PLAYER2.falling()
+    # PLAYER.jump()
