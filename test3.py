@@ -213,10 +213,12 @@ class Stage:
 #         background_box = screen.get_rect()  # Fits background to screen
 #         screen.blit(background, background_box)
 # =============================================================================
-
+        BLACK = (0, 0, 0)
         if self.level_select == 1:
+            
+            
             platforms = pygame.sprite.Group()
-            platforms.add(Platform(WIDTH, 1, WIDTH // 2, HEIGHT - 100, GREEN))
+            platforms.add(Platform(WIDTH, 1, WIDTH // 2, HEIGHT - 100, (38, 38, 38)))
             platforms.add(Platform(300, 20, WIDTH // 1.95, HEIGHT // 3, BLACK))
             platforms.add(Platform(200, 20, WIDTH // 4, HEIGHT // 2, BLACK))
             platforms.add(Platform(200, 20, WIDTH // 1.3, HEIGHT // 2, BLACK))
@@ -240,61 +242,187 @@ class Stage:
             platforms.add(Platform(150, 20, WIDTH // 4, HEIGHT // 1.3, BLACK))
             platforms.add(Platform(150, 20, WIDTH // 1.3, HEIGHT // 1.3, BLACK))
             
-            return platforms
+        return platforms
             # Draws platforms
     def background_load(self):
         
-        background = pygame.image.load(os.path.join('images', 'background' + str(Level_select) + '.png')).convert()
+        background = pygame.image.load(os.path.join('images', 'background' + str(self.level_select) + '.png')).convert()
         return background
 
-pygame.init()
 
 
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+def level1():
+    main(1)
+def level2():
+    main(2)
+def level3():
+    main(3)
 
 
-SKY = (102, 178, 255)
-GREY = (38, 38, 38)
-BLACK = (0, 0, 0)
-GREEN = (0, 255, 0)  # Designated ALPHA colour, if you need something to exist but not be seen make it this colour
-bgColor = pygame.Color("white")
-fgColor = pygame.Color("black")
-plColor = SKY
-STAGE = Stage(Level_select)
-level = STAGE.Level_load()
-bc = STAGE.background_load()
-# Initialise our players
-PLAYER = Player(PLAYER1_X, PLAYER1_Y)
-PLAYER.show(plColor, screen, level,STAGE,bc)
-
-while True:
-    # all our events, might be worth putting into a method later, leave for now.
-    e = pygame.event.poll()
-    if e.type == pygame.QUIT:
-        break
-    elif e.type == pygame.KEYDOWN:
-        if e.key == pygame.K_w:
-            PLAYER.jump1 = True
-        if e.key == pygame.K_UP:
-            PLAYER.jump2 = True
-        if e.key == pygame.K_s:
-            PLAYER.hit = True
-        if e.key == pygame.K_DOWN:
-            PLAYER.hit2 = True
-        if e.key == pygame.K_q:
-            pygame.quit()
-            sys.exit()
-
-    clock.tick(FPS)
-    Level_select = 1
-    # All the actions
-    PLAYER.move()
-    PLAYER.jump()
-    #PLAYER.falling()
-    PLAYER.hitting()
-    PLAYER.reset()
-    # Update the display
+def main(level):
+    SKY = (102, 178, 255)
+    GREY = (38, 38, 38)
+    BLACK = (0, 0, 0)
+    GREEN = (0, 255, 0)  # Designated ALPHA colour, if you need something to exist but not be seen make it this colour
+    bgColor = pygame.Color("white")
+    fgColor = pygame.Color("black")
+    plColor = SKY
+    STAGE = Stage(level)
+    level = STAGE.Level_load()
+    bc = STAGE.background_load()
+    # Initialise our players
+    PLAYER = Player(PLAYER1_X, PLAYER1_Y)
     PLAYER.show(plColor, screen, level,STAGE,bc)
-    pygame.display.update()
+    
+    while True:
+        # all our events, might be worth putting into a method later, leave for now.
+        e = pygame.event.poll()
+        if e.type == pygame.QUIT:
+            break
+        elif e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_w:
+                PLAYER.jump1 = True
+            if e.key == pygame.K_UP:
+                PLAYER.jump2 = True
+            if e.key == pygame.K_s:
+                PLAYER.hit = True
+            if e.key == pygame.K_DOWN:
+                PLAYER.hit2 = True
+            if e.key == pygame.K_q:
+                pygame.quit()
+                sys.exit()
+    
+        clock.tick(FPS)
+        # All the actions
+        PLAYER.move()
+        PLAYER.jump()
+        #PLAYER.falling()
+        PLAYER.hitting()
+        PLAYER.reset()
+        # Update the display
+        PLAYER.show(plColor, screen, level,STAGE,bc)
+        pygame.display.update()
 
+
+
+
+
+def quitgame():
+    pygame.quit()
+    quit()
+
+def text_objects(text, font):
+    textSurface = font.render(text, True, black)
+    return textSurface, textSurface.get_rect()
+ 
+    
+def button(msg,x,y,w,h,ic,ac,action=None):
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    if x+w > mouse[0] > x and y+h > mouse[1] > y:
+        pygame.draw.rect(screen, ac,(x,y,w,h))
+
+        if click[0] == 1 and action != None:
+            action()
+            
+    else:
+        pygame.draw.rect(screen, ic,(x,y,w,h))
+    pygame.font.init()
+    smallText = pygame.font.SysFont("comicsansms",20)
+    textSurf, textRect = text_objects(msg, smallText)
+    textRect.center = ( (x+(w/2)), (y+(h/2)) )
+    screen.blit(textSurf, textRect)
+
+def mainMenu():
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+              
+                
+        screen.fill(white) 
+        pygame.font.init()
+        largeText = pygame.font.SysFont("comicsansms",90) 
+        TextSurf, TextRect = text_objects("Smash Bros", largeText) 
+        TextRect.center = ((display_width/2),(display_height*0.15)) 
+        screen.blit(TextSurf, TextRect)
+
+        button("Fight!",500,200,100,50,green,bright_green,stageMenu)
+        button("Tutorial",500,300,100,50,green,bright_green,tutorialMenu)
+        button("Quit",500,400,100,50,red,bright_red,quitgame)
+
+        pygame.display.update()
+        clock.tick(15)
+        
+def stageMenu():
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                
+        screen.fill(white) 
+        largeText = pygame.font.SysFont("comicsansms",90) 
+        TextSurf, TextRect = text_objects("Level Select", largeText) 
+        TextRect.center = ((display_width/2),(display_height*0.15)) 
+        screen.blit(TextSurf, TextRect)
+
+        button("Stage 1",800,200,100,50,green,bright_green,level1)
+        button("Stage 2",800,300,100,50,green,bright_green,level2)
+        button("Stage 3",800,400,100,50,green,bright_green,level3)
+        button("Menu",800,500,100,50,red,bright_red,quitgame)
+
+        pygame.display.update()
+        clock.tick(15)
+        
+def tutorialMenu():
+    # Logic for tutorial page can go in this function
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                
+        screen.fill(grey) 
+        largeText = pygame.font.SysFont("comicsansms",90) 
+        TextSurf, TextRect = text_objects("Tutorial", largeText) 
+        TextRect.center = ((display_width/2),(display_height*0.15)) 
+        screen.blit(TextSurf, TextRect)
+
+        button("Make these images",800,200,100,50,green,bright_green,quitgame)
+        button("Menu",800,500,100,50,red,bright_red,quitgame)
+
+        pygame.display.update()
+        clock.tick(15)
+    
+pygame.init()
+# =============================================================================
+# display_width = 1600
+# display_height = 800
+# screen = gameScreen.screen
+# =============================================================================
+
+display_width = 1600
+display_height = 800
+screen = pygame.display.set_mode((display_width,display_height),pygame.FULLSCREEN)
+
+black = (0,0,0)
+white = (255,255,255)
+red = (200,0,0)
+blue = (0,0,255)
+green = (0,200,0)
+bright_red = (255,0,0)
+bright_green = (0,255,0)
+grey = (128,128,128)
+ 
+block_color = (53,115,255)
+ 
+ 
+pygame.display.set_caption("Smash Bros")
+clock = pygame.time.Clock()
+
+mainMenu()
 pygame.quit()
+quit()
