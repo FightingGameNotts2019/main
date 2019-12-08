@@ -24,3 +24,12 @@ Thank you to;
 	for ‘background2.png’
 	https://pressstart.vip/images/uploads/assets/sunnyday.png
 	for ‘background3.png’
+	
+
+
+	https://www.pygame.org/docs/
+	for help with implementing pygame specific functions including those used in sound, rects and surfaces, initialisation and start up functions and implementing specific keys
+	https://opensource.com/article/18/7/put-platforms-python-game
+	for help implementing the platform class
+	https://pythonprogramming.net/pygame-buttons-part-1-button-rectangle/
+	for implementing the buttons in the game
